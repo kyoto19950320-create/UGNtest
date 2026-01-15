@@ -41,7 +41,7 @@
   <div class="wrap">
     <!-- TOP -->
     <section id="screenTop" class="card">
-      <img src="assets/top.jpg" alt="top" onerror="this.style.display='none'">
+      <img src="assets/top.png" alt="top" onerror="this.style.display='none'">
       <h2 style="margin-top:14px;">注意事項</h2>
       <p class="muted">
         本試験は任務遂行における判断傾向を把握する目的で実施されます。正解・不正解は存在しません。<br>
@@ -85,7 +85,7 @@ const QUESTIONS = [
   {
     title: "第1問：見知らぬ命",
     text: "封鎖区域内で、一般市民が1人倒れている。あなたの任務は「情報回収」であり、救助は想定されていない。",
-    img: "assets/q1.jpg",
+    img: "assets/q1.png",
     choices: [
       { label:"任務を優先し、見なかったことにする", tag:"Role" },
       { label:"状況を確認し、可能なら最低限の救命処置だけ行う", tag:"Bearer" },
@@ -97,7 +97,7 @@ const QUESTIONS = [
   {
     title: "第2問：仲間の逸脱",
     text: "同行しているエージェントが、命令を無視して独断行動を取ろうとしている。理由は「このままでは助からない人がいるから」だ。",
-    img: "assets/q2.jpg",
+    img: "assets/q2.png",
     choices: [
       { label:"命令違反として制止する", tag:"Order" },
       { label:"表向きは止めつつ、裏でフォローする", tag:"Anchor" },
@@ -109,7 +109,7 @@ const QUESTIONS = [
   {
     title: "第3問：情報の秘匿",
     text: "真実を公表すれば混乱は起きるが、多くの人は救われる可能性がある。秘匿すれば秩序は保たれるが、犠牲は確実に出る。",
-    img: "assets/q3.jpg",
+    img: "assets/q3.png",
     choices: [
       { label:"秘匿を選ぶ。秩序は最優先事項だ", tag:"Order" },
       { label:"段階的に情報を開示する", tag:"Utilitarian" },
@@ -121,7 +121,7 @@ const QUESTIONS = [
   {
     title: "第4問：取り返しのつかない選択",
     text: "目の前の選択は、どちらを選んでも誰かの人生を壊す。",
-    img: "assets/q4.jpg",
+    img: "assets/q4.png",
     choices: [
       { label:"被害が少ない方を選ぶ", tag:"Utilitarian" },
       { label:"自分が後悔しない方を選ぶ", tag:"Bearer" },
@@ -133,7 +133,7 @@ const QUESTIONS = [
   {
     title: "第5問：自分自身",
     text: "あなたがオーヴァードであることが、公になる可能性が出た。",
-    img: "assets/q5.jpg",
+    img: "assets/q5.png",
     choices: [
       { label:"何があっても隠し通す", tag:"Order" },
       { label:"必要とあらば明かす", tag:"Role" },
@@ -145,34 +145,34 @@ const QUESTIONS = [
 ];
 
 const RESULT_DB = {
-  Order: { name:"秩序優先型（Order）", img:"assets/result_order.jpg",
+  Order: { name:"秩序優先型（Order）", img:"assets/result_order.png",
     text:`<p><b>UGN所見：</b>命令系統・規範を優先し、現場の混乱を最小化する傾向が強い。安定戦力。</p>
           <p class="muted"><b>注意：</b>上位方針が腐敗・暴走した場合でも従ってしまうリスク。</p>` },
-  Delegator: { name:"責任限定型（Delegator）", img:"assets/result_delegator.jpg",
+  Delegator: { name:"責任限定型（Delegator）", img:"assets/result_delegator.png",
     text:`<p><b>UGN所見：</b>上位判断を求め誤判断を避ける。現場事故を起こしにくい。</p>
           <p class="muted"><b>注意：</b>指揮不在・通信断で判断停止に陥りやすい。</p>` },
-  Utilitarian: { name:"功利計算型（Utilitarian）", img:"assets/result_utilitarian.jpg",
+  Utilitarian: { name:"功利計算型（Utilitarian）", img:"assets/result_utilitarian.png",
     text:`<p><b>UGN所見：</b>人数・成功率・損耗を俯瞰し最適化に寄せた判断ができる。</p>
           <p class="muted"><b>注意：</b>切り捨てに慣れると信頼が摩耗する。</p>` },
-  Altruist: { name:"献身行動型（Altruist）", img:"assets/result_altruist.jpg",
+  Altruist: { name:"献身行動型（Altruist）", img:"assets/result_altruist.png",
     text:`<p><b>UGN所見：</b>目の前の命に引き寄せられやすい。市民対応・保全任務で強い。</p>
           <p class="muted"><b>注意：</b>救えなかった経験が自責に変換されやすい。</p>` },
-  Bearer: { name:"自己責任型（Bearer）", img:"assets/result_bearer.jpg",
+  Bearer: { name:"自己責任型（Bearer）", img:"assets/result_bearer.png",
     text:`<p><b>UGN所見：</b>背負える範囲で線引きする。現実的で信頼されやすい。</p>
           <p class="muted"><b>注意：</b>限界超過時の折れ方が急激。</p>` },
-  Role: { name:"役割遵守型（Role）", img:"assets/result_role.jpg",
+  Role: { name:"役割遵守型（Role）", img:"assets/result_role.png",
     text:`<p><b>UGN所見：</b>職務を優先し、感情と判断を切り分けやすい。</p>
           <p class="muted"><b>注意：</b>希薄化・冷たく見える誤解が起きやすい。</p>` },
-  Impulse: { name:"直感衝動型（Impulse）", img:"assets/result_impulse.jpg",
+  Impulse: { name:"直感衝動型（Impulse）", img:"assets/result_impulse.png",
     text:`<p><b>UGN所見：</b>瞬間判断に強い。初動で価値が出る。</p>
           <p class="muted"><b>注意：</b>誘導・心理操作に弱い場合がある。</p>` },
-  Avoider: { name:"熟慮回避型（Avoider）", img:"assets/result_avoider.jpg",
+  Avoider: { name:"熟慮回避型（Avoider）", img:"assets/result_avoider.png",
     text:`<p><b>UGN所見：</b>第三案の探索で局面転換を起こせる。</p>
           <p class="muted"><b>注意：</b>締切がある状況で判断不能になりやすい。</p>` },
-  Anchor: { name:"依存安定型（Anchor）", img:"assets/result_anchor.jpg",
+  Anchor: { name:"依存安定型（Anchor）", img:"assets/result_anchor.png",
     text:`<p><b>UGN所見：</b>チーム運用で安定。信頼関係が成立すると粘り強い。</p>
           <p class="muted"><b>注意：</b>依存先が崩れると急激に不安定化。</p>` },
-  Observer: { name:"観測者型（Observer）", img:"assets/result_observer.jpg",
+  Observer: { name:"観測者型（Observer）", img:"assets/result_observer.png",
     text:`<p><b>UGN所見：</b>一歩引いた分析に強い。調査・交渉で価値が出る。</p>
           <p class="muted"><b>注意：</b>当事者性が薄れ、決断責任を外側に置きやすい。</p>` },
 };
