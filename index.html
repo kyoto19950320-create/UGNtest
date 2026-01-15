@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UGN 倫理適性確認プログラム</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin:0; background:#0b0f14; color:#e6edf3; }
+    header { background: #0f1720; padding: 20px; border-bottom: 1px solid #223042; }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 20px; }
+    .card { background:#0f1720; border:1px solid #223042; border-radius:14px; padding:16px; margin:16px 0; }
+    .muted { color:#9fb2c8; font-size: 0.95rem; }
+    button { background:#1f6feb; color:white; border:0; padding:12px 16px; border-radius:12px; cursor:pointer; }
+    button:disabled { opacity:0.5; cursor:not-allowed; }
+    .row { display:flex; gap:16px; flex-wrap:wrap; }
+    img { width:100%; border-radius:12px; border:1px solid #223042; }
+    .timer { font-variant-numeric: tabular-nums; }
+    .choice { display:block; padding:10px 12px; border:1px solid #223042; border-radius:12px; margin:10px 0; cursor:pointer; }
+    .choice input { margin-right: 10px; }
+    .small { font-size: 0.9rem; }
+    .pill { display:inline-block; padding:4px 10px; border:1px solid #223042; border-radius:999px; margin-right:8px; }
+    details { border:1px solid #223042; border-radius:12px; padding:10px 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="row" style="align-items:center; justify-content:space-between;">
+        <div>
+          <div class="muted small">UGN / Internal Use Only</div>
+          <h1 style="margin:6px 0 0; font-size:1.35rem;">倫理適性確認プログラム（基礎設問 / 全5問）</h1>
+        </div>
+        <div class="timer">
+          <span class="pill">経過 <span id="totalTime">0.0</span>s</span>
+          <span class="pill">設問 <span id="qTime">0.0</span>s</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <!-- TOP -->
+    <section id="screenTop" class="card">
+      <img src="assets/top.jpg" alt="top" onerror="this.style.display='none'">
+      <h2 style="margin-top:14px;">注意事項</h2>
+      <p class="muted">
+        本試験は任務遂行における判断傾向を把握する目的で実施されます。正解・不正解は存在しません。<br>
+        回答内容は診断結果として本人に提示されます（提出はスクリーンショット推奨）。
+      </p>
+      <button id="btnStart">試験開始</button>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="screenQuiz" class="card" style="display:none;">
+      <div class="muted small">設問 <span id="qIndex">1</span>/5</div>
+      <h2 id="qTitle" style="margin:6px 0 8px;"></h2>
+      <img id="qImg" alt="question image" style="display:none;">
+      <p id="qText" class="muted"></p>
+      <div id="choices"></div>
+      <button id="btnNext" disabled>次へ</button>
+    </section>
+
+    <!-- RESULT -->
+    <section id="screenResult" class="card" style="display:none;">
+      <h2>診断結果</h2>
+      <div class="muted">あなたの傾向：<strong id="resultType"></strong></div>
+      <div style="margin-top:12px;">
+        <img id="resultImg" alt="result image" style="display:none;">
+      </div>
+      <div class="card" style="background:#0b1220;">
+        <div id="resultText"></div>
+      </div>
+
+      <details>
+        <summary>計測ログ（提出用）</summary>
+        <pre id="log" style="white-space:pre-wrap;"></pre>
+      </details>
+      <p class="muted small">※提出は結果画面のスクリーンショット推奨（回答詳細を送らせない運用も可能）</p>
+    </section>
+  </div>
+
+<script>
+/** ここだけ編集すれば内容が反映される **/
+const QUESTIONS = [
+  {
+    title: "第1問：見知らぬ命",
+    text: "封鎖区域内で、一般市民が1人倒れている。あなたの任務は「情報回収」であり、救助は想定されていない。",
+    img: "assets/q1.jpg",
+    choices: [
+      { label:"任務を優先し、見なかったことにする", tag:"Role" },
+      { label:"状況を確認し、可能なら最低限の救命処置だけ行う", tag:"Bearer" },
+      { label:"その場で救助を試み、任務は後回しにする", tag:"Altruist" },
+      { label:"上司に連絡し、判断を仰ぐ", tag:"Delegator" },
+      { label:"自分が救うべきかどうかを、その人の状態で判断する", tag:"Observer" },
+    ]
+  },
+  {
+    title: "第2問：仲間の逸脱",
+    text: "同行しているエージェントが、命令を無視して独断行動を取ろうとしている。理由は「このままでは助からない人がいるから」だ。",
+    img: "assets/q2.jpg",
+    choices: [
+      { label:"命令違反として制止する", tag:"Order" },
+      { label:"表向きは止めつつ、裏でフォローする", tag:"Anchor" },
+      { label:"共に行動し、結果は自分も引き受ける", tag:"Altruist" },
+      { label:"その判断を尊重し、距離を取る", tag:"Observer" },
+      { label:"自分ならどうするかを即座に考え、同じ選択をする", tag:"Impulse" },
+    ]
+  },
+  {
+    title: "第3問：情報の秘匿",
+    text: "真実を公表すれば混乱は起きるが、多くの人は救われる可能性がある。秘匿すれば秩序は保たれるが、犠牲は確実に出る。",
+    img: "assets/q3.jpg",
+    choices: [
+      { label:"秘匿を選ぶ。秩序は最優先事項だ", tag:"Order" },
+      { label:"段階的に情報を開示する", tag:"Utilitarian" },
+      { label:"すべてを公表し、人々の判断に委ねる", tag:"Altruist" },
+      { label:"公表の是非を決める立場の人間に委ねる", tag:"Delegator" },
+      { label:"その情報を「誰が得をするか」で判断する", tag:"Observer" },
+    ]
+  },
+  {
+    title: "第4問：取り返しのつかない選択",
+    text: "目の前の選択は、どちらを選んでも誰かの人生を壊す。",
+    img: "assets/q4.jpg",
+    choices: [
+      { label:"被害が少ない方を選ぶ", tag:"Utilitarian" },
+      { label:"自分が後悔しない方を選ぶ", tag:"Bearer" },
+      { label:"役割として与えられた選択をする", tag:"Role" },
+      { label:"どちらも選ばず、第三の可能性を探す", tag:"Avoider" },
+      { label:"自分が責任を取れる選択だけをする", tag:"Bearer" },
+    ]
+  },
+  {
+    title: "第5問：自分自身",
+    text: "あなたがオーヴァードであることが、公になる可能性が出た。",
+    img: "assets/q5.jpg",
+    choices: [
+      { label:"何があっても隠し通す", tag:"Order" },
+      { label:"必要とあらば明かす", tag:"Role" },
+      { label:"公になる前に、身を引く", tag:"Avoider" },
+      { label:"組織の判断に従う", tag:"Delegator" },
+      { label:"公になること自体を、恐れていない", tag:"Impulse" },
+    ]
+  },
+];
+
+const RESULT_DB = {
+  Order: { name:"秩序優先型（Order）", img:"assets/result_order.jpg",
+    text:`<p><b>UGN所見：</b>命令系統・規範を優先し、現場の混乱を最小化する傾向が強い。安定戦力。</p>
+          <p class="muted"><b>注意：</b>上位方針が腐敗・暴走した場合でも従ってしまうリスク。</p>` },
+  Delegator: { name:"責任限定型（Delegator）", img:"assets/result_delegator.jpg",
+    text:`<p><b>UGN所見：</b>上位判断を求め誤判断を避ける。現場事故を起こしにくい。</p>
+          <p class="muted"><b>注意：</b>指揮不在・通信断で判断停止に陥りやすい。</p>` },
+  Utilitarian: { name:"功利計算型（Utilitarian）", img:"assets/result_utilitarian.jpg",
+    text:`<p><b>UGN所見：</b>人数・成功率・損耗を俯瞰し最適化に寄せた判断ができる。</p>
+          <p class="muted"><b>注意：</b>切り捨てに慣れると信頼が摩耗する。</p>` },
+  Altruist: { name:"献身行動型（Altruist）", img:"assets/result_altruist.jpg",
+    text:`<p><b>UGN所見：</b>目の前の命に引き寄せられやすい。市民対応・保全任務で強い。</p>
+          <p class="muted"><b>注意：</b>救えなかった経験が自責に変換されやすい。</p>` },
+  Bearer: { name:"自己責任型（Bearer）", img:"assets/result_bearer.jpg",
+    text:`<p><b>UGN所見：</b>背負える範囲で線引きする。現実的で信頼されやすい。</p>
+          <p class="muted"><b>注意：</b>限界超過時の折れ方が急激。</p>` },
+  Role: { name:"役割遵守型（Role）", img:"assets/result_role.jpg",
+    text:`<p><b>UGN所見：</b>職務を優先し、感情と判断を切り分けやすい。</p>
+          <p class="muted"><b>注意：</b>希薄化・冷たく見える誤解が起きやすい。</p>` },
+  Impulse: { name:"直感衝動型（Impulse）", img:"assets/result_impulse.jpg",
+    text:`<p><b>UGN所見：</b>瞬間判断に強い。初動で価値が出る。</p>
+          <p class="muted"><b>注意：</b>誘導・心理操作に弱い場合がある。</p>` },
+  Avoider: { name:"熟慮回避型（Avoider）", img:"assets/result_avoider.jpg",
+    text:`<p><b>UGN所見：</b>第三案の探索で局面転換を起こせる。</p>
+          <p class="muted"><b>注意：</b>締切がある状況で判断不能になりやすい。</p>` },
+  Anchor: { name:"依存安定型（Anchor）", img:"assets/result_anchor.jpg",
+    text:`<p><b>UGN所見：</b>チーム運用で安定。信頼関係が成立すると粘り強い。</p>
+          <p class="muted"><b>注意：</b>依存先が崩れると急激に不安定化。</p>` },
+  Observer: { name:"観測者型（Observer）", img:"assets/result_observer.jpg",
+    text:`<p><b>UGN所見：</b>一歩引いた分析に強い。調査・交渉で価値が出る。</p>
+          <p class="muted"><b>注意：</b>当事者性が薄れ、決断責任を外側に置きやすい。</p>` },
+};
+
+function pickTopTag(score){
+  let best = null, bestV = -1;
+  for (const [k,v] of Object.entries(score)) if (v > bestV) { best=k; bestV=v; }
+  return best || "Observer";
+}
+
+/** アプリ本体 **/
+const elTop = document.getElementById("screenTop");
+const elQuiz = document.getElementById("screenQuiz");
+const elRes = document.getElementById("screenResult");
+const btnStart = document.getElementById("btnStart");
+const btnNext = document.getElementById("btnNext");
+const qIndexEl = document.getElementById("qIndex");
+const qTitleEl = document.getElementById("qTitle");
+const qTextEl = document.getElementById("qText");
+const qImgEl = document.getElementById("qImg");
+const choicesEl = document.getElementById("choices");
+const totalTimeEl = document.getElementById("totalTime");
+const qTimeEl = document.getElementById("qTime");
+
+let qIndex = 0;
+let totalStart = 0;
+let qStart = 0;
+let logs = [];
+let score = {};
+
+function showQ(){
+  const q = QUESTIONS[qIndex];
+  qIndexEl.textContent = String(qIndex+1);
+  qTitleEl.textContent = q.title;
+  qTextEl.textContent = q.text;
+
+  if (q.img) {
+    qImgEl.src = q.img;
+    qImgEl.style.display = "block";
+    qImgEl.onerror = () => qImgEl.style.display = "none";
+  } else {
+    qImgEl.style.display = "none";
+  }
+
+  choicesEl.innerHTML = "";
+  btnNext.disabled = true;
+
+  q.choices.forEach((c, i) => {
+    const id = `c_${qIndex}_${i}`;
+    const label = document.createElement("label");
+    label.className = "choice";
+    label.innerHTML = `<input type="radio" name="choice" id="${id}"> ${c.label}`;
+    label.onclick = () => {
+      btnNext.disabled = false;
+      document.querySelectorAll('input[name="choice"]').forEach(x=>x.checked=false);
+      label.querySelector("input").checked = true;
+      label.dataset.tag = c.tag;
+      label.dataset.label = c.label;
+      document.querySelectorAll(".choice").forEach(x=>x.dataset.selected="0");
+      label.dataset.selected="1";
+    };
+    choicesEl.appendChild(label);
+  });
+
+  qStart = performance.now();
+}
+
+function finish(){
+  const top = pickTopTag(score);
+  const res = RESULT_DB[top] || RESULT_DB.Observer;
+  document.getElementById("resultType").textContent = res.name;
+  document.getElementById("resultText").innerHTML = res.text;
+
+  const rImg = document.getElementById("resultImg");
+  rImg.src = res.img;
+  rImg.style.display = "block";
+  rImg.onerror = () => rImg.style.display = "none";
+
+  const total = (performance.now() - totalStart)/1000;
+  const payload = {
+    topType: res.name,
+    totalSeconds: Number(total.toFixed(2)),
+    perQuestionSeconds: logs.map(x=>x.seconds),
+    picks: logs.map(x=>({ q:x.q, choice:x.choice })),
+    score
+  };
+  document.getElementById("log").textContent = JSON.stringify(payload, null, 2);
+
+  elQuiz.style.display = "none";
+  elRes.style.display = "block";
+}
+
+function tick(){
+  if (!totalStart) return requestAnimationFrame(tick);
+  const now = performance.now();
+  totalTimeEl.textContent = ((now-totalStart)/1000).toFixed(1);
+  if (elQuiz.style.display !== "none") qTimeEl.textContent = ((now-qStart)/1000).toFixed(1);
+  requestAnimationFrame(tick);
+}
+
+btnStart.onclick = () => {
+  elTop.style.display = "none";
+  elQuiz.style.display = "block";
+  totalStart = performance.now();
+  qIndex = 0;
+  logs = [];
+  score = {};
+  showQ();
+  requestAnimationFrame(tick);
+};
+
+btnNext.onclick = () => {
+  const selected = Array.from(document.querySelectorAll(".choice")).find(x=>x.dataset.selected==="1");
+  if (!selected) return;
+
+  const seconds = (performance.now() - qStart)/1000;
+  const tag = selected.dataset.tag || "Observer";
+  const choice = selected.dataset.label || "";
+
+  score[tag] = (score[tag] || 0) + 1;
+
+  logs.push({
+    q: QUESTIONS[qIndex].title,
+    choice,
+    tag,
+    seconds: Number(seconds.toFixed(2)),
+    speed: seconds <= 5 ? "即答" : (seconds <= 10 ? "逡巡" : "熟考")
+  });
+
+  qIndex++;
+  if (qIndex >= QUESTIONS.length) finish();
+  else showQ();
+};
+</script>
+</body>
+</html>
